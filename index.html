@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVID RIVER — Visual HUD Data System</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="ambient-glow"></div>
+    <div class="cyber-grid"></div>
+    <div class="scanlines"></div>
+
+    <div id="info-tab" class="info-tab">
+        <button id="info-toggle" class="info-toggle" type="button" aria-expanded="true">Close</button>
+        <div id="info-box" class="info-box">
+            <strong>System Brief</strong>
+            <div class="info-copy">
+                <h3>Live Origin Attachment</h3>
+                <p>Expanding shockwaves now calculate their center coordinates relative to the cursor's live (x, y) position on every frame, eliminating the position lag and trailing delay present in early physics tests.</p>
+
+                <h3>Persistent Interface Layer</h3>
+                <p>The DOM control overlay (#info-tab) renders cleanly at a high z-index over the HTML5 canvas, making the info box visible immediately on page load without interfering with canvas rendering loops.</p>
+
+                <h3>What feels most authentic in the behavior</h3>
+                <p>Continuous Energy Echo: The stacked three-ring radial expansion attached to pointer movement gives standard cursor navigation a tactile, responsive feel without requiring continuous clicks or heavy particle physics.</p>
+
+                <h3>Where it drifts into generic or noisy territory</h3>
+                <p>Rapid Motion Clutter: Sweeping the cursor rapidly across the screen generates high-frequency ring overlaps that create visual noise.</p>
+                <p>Default Visual Tropes: The cyan-on-dark-slate palette (#45f3ff on #0b0c10) leans into generic sci-fi aesthetic defaults rather than a unique visual style.</p>
+
+                <h3>The single specific change for v2</h3>
+                <p>Velocity-Based Modulation: Map ring expansion speed and fade decay rate directly to cursor velocity (v = sqrt(Δx² + Δy²)). High-velocity sweeps will trigger thin, fast-fading shockwaves to keep the screen clean, while low-velocity movement or hovering will settle into a slow, warm ambient pulse.</p>
+
+                <h3>Critique Diagnostic Review</h3>
+                <p>Clarity: The connection between cursor movement and ripple origin is instantly legible. The info panel state clearly communicates system rules upon initial page render.</p>
+                <p>Restraint: Unnecessary visual elements (particle trails, glow filters, heavy shadows) were eliminated to focus purely on stroke width, opacity decay, and ring frequency.</p>
+                <p>Intention: The ring offset spacing (-30px, -60px) and frame-opacity fade (rgba(11, 12, 16, 0.25)) are specifically set to maintain motion trails without overwhelming the canvas.</p>
+                <p>Craft: The continuous render loop behaves deterministically across reloads, scaling smoothly to match browser resize events without distortion.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="hud-container">
+        <header class="topbar">
+            <div class="brand">
+                <div class="status-badge">
+                    <span class="pulse-dot"></span>
+                    <span class="status-text">LIVE TELEMETRY STREAM</span>
+                </div>
+                <h1>COVID <span class="neon-text">RIVER</span> <span class="version-tag">v2.5</span></h1>
+            </div>
+
+            <div class="controls-group">
+                <div class="selector-wrapper">
+                    <label for="countrySelect" class="hud-label">VECTOR TARGET</label>
+                    <select id="countrySelect">
+                        <option value="United States">United States</option>
+                        <option value="Brazil">Brazil</option>
+                        <option value="India">India</option>
+                        <option value="France">France</option>
+                        <option value="Germany">Germany</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Italy">Italy</option>
+                        <option value="Japan">Japan</option>
+                        <option value="South Korea">South Korea</option>
+                        <option value="Australia">Australia</option>
+                        <option value="China">China</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Mexico">Mexico</option>
+                        <option value="South Africa">South Africa</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button id="activateButton" class="btn btn-primary" type="button">
+                        <span>INITIATE SCAN</span>
+                    </button>
+                    <button id="toggleMeshBtn" class="btn btn-secondary" type="button">MESH: ON</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="viewport">
+            <section class="canvas-stage">
+                <div class="hud-frame frame-tl"></div>
+                <div class="hud-frame frame-tr"></div>
+                <div class="hud-frame frame-bl"></div>
+                <div class="hud-frame frame-br"></div>
+
+                <div class="stage-header">
+                    <span class="stage-sub">FLOW SIMULATION // CLICK CANVAS FOR IMPULSE SHOCKWAVE</span>
+                    <span id="connectionText" class="sys-ok">SYSTEM ONLINE</span>
+                </div>
+
+                <canvas id="riverCanvas" width="1200" height="520"></canvas>
+
+                <div class="telemetry-bar">
+                    <div class="country-card">
+                        <span class="hud-label">TARGET REGION</span>
+                        <h2 id="countryName">UNITED STATES</h2>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <span class="hud-label">TOTAL CASES</span>
+                            <strong id="cases" class="metric-val">—</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span class="hud-label">NEW CASES</span>
+                            <strong id="newCases" class="metric-val highlight-red">—</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span class="hud-label">VELOCITY FACTOR</span>
+                            <strong id="flowSpeed" class="metric-val highlight-cyan">—</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pressure-gauge-card">
+                    <div class="gauge-header">
+                        <span class="hud-label">SATURATION PRESSURE</span>
+                        <strong id="pressureValue" class="gauge-percent">0%</strong>
+                    </div>
+                    <div class="gauge-track">
+                        <div id="pressureFill" class="gauge-fill"></div>
+                    </div>
+                    <p id="systemMessage" class="gauge-status">Select a vector target to initiate simulation parameters.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const infoToggle = document.getElementById('info-toggle');
+        const infoBox = document.getElementById('info-box');
+
+        function setInfoOpen(open) {
+            if (!infoToggle || !infoBox) return;
+            infoBox.classList.toggle('hidden', !open);
+            infoToggle.setAttribute('aria-expanded', String(open));
+            infoToggle.textContent = open ? 'Close' : 'Info';
+        }
+
+        if (infoToggle && infoBox) {
+            setInfoOpen(true);
+            infoToggle.addEventListener('click', () => {
+                const isOpen = !infoBox.classList.contains('hidden');
+                setInfoOpen(!isOpen);
+            });
+        }
+    </script>
+</body>
+</html>
