@@ -1,160 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COVID RIVER — Visual HUD Data System</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COVID RIVER — v2</title>
+    <meta name="description" content="COVID RIVER v2: a single data-driven river surface. One country, one current, one atmosphere." />
+    <meta name="theme-color" content="#070b0d" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
+
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+    </script>
 </head>
 <body>
-    <div class="ambient-glow"></div>
-    <div class="cyber-grid"></div>
-    <div class="scanlines"></div>
+    <canvas id="river"></canvas>
 
-    <div id="info-tab" class="info-tab">
-        <button id="info-toggle" class="info-toggle" type="button" aria-expanded="true">Close</button>
-        <div id="info-box" class="info-box">
-            <strong>System Brief</strong>
-            <div class="info-copy">
-                <h3>Live Origin Attachment</h3>
-                <p>Expanding shockwaves now calculate their center coordinates relative to the cursor's live (x, y) position on every frame, eliminating the position lag and trailing delay present in early physics tests.</p>
-
-                <h3>Persistent Interface Layer</h3>
-                <p>The DOM control overlay (#info-tab) renders cleanly at a high z-index over the HTML5 canvas, making the info box visible immediately on page load without interfering with canvas rendering loops.</p>
-
-                <h3>What feels most authentic in the behavior</h3>
-                <p>Continuous Energy Echo: The stacked three-ring radial expansion attached to pointer movement gives standard cursor navigation a tactile, responsive feel without requiring continuous clicks or heavy particle physics.</p>
-
-                <h3>Where it drifts into generic or noisy territory</h3>
-                <p>Rapid Motion Clutter: Sweeping the cursor rapidly across the screen generates high-frequency ring overlaps that create visual noise.</p>
-                <p>Default Visual Tropes: The cyan-on-dark-slate palette (#45f3ff on #0b0c10) leans into generic sci-fi aesthetic defaults rather than a unique visual style.</p>
-
-                <h3>The single specific change for v2</h3>
-                <p>Velocity-Based Modulation: Map ring expansion speed and fade decay rate directly to cursor velocity (v = sqrt(Δx² + Δy²)). High-velocity sweeps will trigger thin, fast-fading shockwaves to keep the screen clean, while low-velocity movement or hovering will settle into a slow, warm ambient pulse.</p>
-
-                <h3>Critique Diagnostic Review</h3>
-                <p>Clarity: The connection between cursor movement and ripple origin is instantly legible. The info panel state clearly communicates system rules upon initial page render.</p>
-                <p>Restraint: Unnecessary visual elements (particle trails, glow filters, heavy shadows) were eliminated to focus purely on stroke width, opacity decay, and ring frequency.</p>
-                <p>Intention: The ring offset spacing (-30px, -60px) and frame-opacity fade (rgba(11, 12, 16, 0.25)) are specifically set to maintain motion trails without overwhelming the canvas.</p>
-                <p>Craft: The continuous render loop behaves deterministically across reloads, scaling smoothly to match browser resize events without distortion.</p>
-            </div>
+    <!-- Minimal persistent HUD. No decorative layers — the river is the atmosphere. -->
+    <header class="topbar">
+        <div class="title">
+            <span class="mark">COVID&nbsp;RIVER</span>
+            <span class="ver">v2</span>
         </div>
-    </div>
+        <div id="statePill" class="state state-calm">CALM</div>
+    </header>
 
-    <div class="hud-container">
-        <header class="topbar">
-            <div class="brand">
-                <div class="status-badge">
-                    <span class="pulse-dot"></span>
-                    <span class="status-text">LIVE TELEMETRY STREAM</span>
-                </div>
-                <h1>COVID <span class="neon-text">RIVER</span> <span class="version-tag">v2.5</span></h1>
-            </div>
+    <footer class="readout">
+        <label class="field select-field">
+            <span class="k">REGION</span>
+            <select id="country" aria-label="Select region"></select>
+        </label>
+        <div class="field">
+            <span class="k">SATURATION</span>
+            <span id="satVal" class="v">—</span>
+        </div>
+        <div class="field">
+            <span class="k">FLOW</span>
+            <span id="flowVal" class="v">—</span>
+        </div>
+        <div class="field">
+            <span class="k">NEW / DAY</span>
+            <span id="newVal" class="v">—</span>
+        </div>
+        <button id="notesToggle" class="notes-btn" type="button" aria-expanded="false" aria-controls="notes">NOTES</button>
+    </footer>
 
-            <div class="controls-group">
-                <div class="selector-wrapper">
-                    <label for="countrySelect" class="hud-label">VECTOR TARGET</label>
-                    <select id="countrySelect">
-                        <option value="United States">United States</option>
-                        <option value="Brazil">Brazil</option>
-                        <option value="India">India</option>
-                        <option value="France">France</option>
-                        <option value="Germany">Germany</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Italy">Italy</option>
-                        <option value="Japan">Japan</option>
-                        <option value="South Korea">South Korea</option>
-                        <option value="Australia">Australia</option>
-                        <option value="China">China</option>
-                        <option value="Canada">Canada</option>
-                        <option value="Mexico">Mexico</option>
-                        <option value="South Africa">South Africa</option>
-                    </select>
-                </div>
+    <!-- All required text lives here, quiet by default so the atmosphere stays clean. -->
+    <aside id="notes" class="notes hidden" aria-hidden="true">
+        <div class="notes-inner">
+            <button id="notesClose" class="notes-close" type="button" aria-label="Close notes">×</button>
 
-                <div class="button-group">
-                    <button id="activateButton" class="btn btn-primary" type="button">
-                        <span>INITIATE SCAN</span>
-                    </button>
-                    <button id="toggleMeshBtn" class="btn btn-secondary" type="button">MESH: ON</button>
-                </div>
-            </div>
-        </header>
+            <h1>COVID RIVER <span class="dim">/ v2</span></h1>
+            <p class="lede">Self as System — one data-driven current. Remove one thing, add nothing, make what remains carry the work.</p>
 
-        <main class="viewport">
-            <section class="canvas-stage">
-                <div class="hud-frame frame-tl"></div>
-                <div class="hud-frame frame-tr"></div>
-                <div class="hud-frame frame-bl"></div>
-                <div class="hud-frame frame-br"></div>
-
-                <div class="stage-header">
-                    <span class="stage-sub">FLOW SIMULATION // CLICK CANVAS FOR IMPULSE SHOCKWAVE</span>
-                    <span id="connectionText" class="sys-ok">SYSTEM ONLINE</span>
-                </div>
-
-                <canvas id="riverCanvas" width="1200" height="520"></canvas>
-
-                <div class="telemetry-bar">
-                    <div class="country-card">
-                        <span class="hud-label">TARGET REGION</span>
-                        <h2 id="countryName">UNITED STATES</h2>
-                    </div>
-
-                    <div class="metrics-grid">
-                        <div class="metric-box">
-                            <span class="hud-label">TOTAL CASES</span>
-                            <strong id="cases" class="metric-val">—</strong>
-                        </div>
-                        <div class="metric-box">
-                            <span class="hud-label">NEW CASES</span>
-                            <strong id="newCases" class="metric-val highlight-red">—</strong>
-                        </div>
-                        <div class="metric-box">
-                            <span class="hud-label">VELOCITY FACTOR</span>
-                            <strong id="flowSpeed" class="metric-val highlight-cyan">—</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pressure-gauge-card">
-                    <div class="gauge-header">
-                        <span class="hud-label">SATURATION PRESSURE</span>
-                        <strong id="pressureValue" class="gauge-percent">0%</strong>
-                    </div>
-                    <div class="gauge-track">
-                        <div id="pressureFill" class="gauge-fill"></div>
-                    </div>
-                    <p id="systemMessage" class="gauge-status">Select a vector target to initiate simulation parameters.</p>
-                </div>
+            <section>
+                <h2>Rules</h2>
+                <ol>
+                    <li>Each region loads its data into a single river surface.</li>
+                    <li>Cumulative cases &rarr; <em>saturation</em> &rarr; color and choppiness (calm petrol &rarr; critical rust).</li>
+                    <li>Daily new cases &rarr; <em>flow speed</em> of the current.</li>
+                    <li>Your cursor pushes one swell across the surface.</li>
+                </ol>
+                <p class="thresholds">Saturation bands &mdash; <b>CALM</b> &lt;40% &middot; <b>TURBULENT</b> 40&ndash;75% &middot; <b>CRITICAL</b> &gt;75% of the peak region.</p>
             </section>
-        </main>
-    </div>
 
-    <script src="script.js"></script>
-    <script>
-        const infoToggle = document.getElementById('info-toggle');
-        const infoBox = document.getElementById('info-box');
+            <section>
+                <h2>Controls</h2>
+                <ul>
+                    <li>Select a region in the bottom bar.</li>
+                    <li>Move the cursor over the river to push a swell.</li>
+                    <li>Toggle these notes.</li>
+                </ul>
+            </section>
 
-        function setInfoOpen(open) {
-            if (!infoToggle || !infoBox) return;
-            infoBox.classList.toggle('hidden', !open);
-            infoToggle.setAttribute('aria-expanded', String(open));
-            infoToggle.textContent = open ? 'Close' : 'Info';
-        }
+            <section>
+                <h2>Reflection on v1 (before building)</h2>
+                <ul class="inventory">
+                    <li><span class="tag keep">KEEP</span> Data drives motion — new cases set the river&rsquo;s flow speed. It was the one behavior that read without explanation.</li>
+                    <li><span class="tag remove">REMOVE</span> The HUD chrome — scanlines, cyber-grid, ambient glow, corner frames, neon badges, mesh toggle. The noisiest layer, and it faked the atmosphere the river should have earned.</li>
+                    <li><span class="tag tighten">TIGHTEN</span> Saturation thresholds — vague in v1, now explicit calm / turbulent / critical bands that visibly change color and turbulence.</li>
+                    <li><span class="tag ask">v2 Q</span> Can data alone generate atmosphere once the decoration it was leaning on is gone?</li>
+                </ul>
+            </section>
 
-        if (infoToggle && infoBox) {
-            setInfoOpen(true);
-            infoToggle.addEventListener('click', () => {
-                const isOpen = !infoBox.classList.contains('hidden');
-                setInfoOpen(!isOpen);
-            });
-        }
-    </script>
+            <section>
+                <h2>v2 reflection (after building)</h2>
+                <p>
+                    v1 was a pile of features wearing a sci-fi HUD, and the atmosphere was carried by decoration
+                    stacked on top of the canvas rather than by the system itself. For v2 I removed the entire chrome
+                    layer and added nothing: no new inputs, no new visual layers, no second river. The surviving rule —
+                    data drives motion — had to hold the whole piece up. Rebuilding it in Three.js as one continuous
+                    surface forced every quality to come from the water: saturation now sets both color and choppiness
+                    on explicit bands, and daily cases set the flow, so the mood of a region is legible in the current
+                    alone. The cursor is the only gesture left, a single swell that proves the surface is live without
+                    cluttering it. Removing the chrome improved the meaning because the piece can no longer hide behind
+                    atmosphere it did not produce. The finding: the HUD was not load-bearing — it was a crutch, and the
+                    river stands up better without it.
+                </p>
+            </section>
+
+            <section>
+                <h2>End-of-build reflection</h2>
+                <ul>
+                    <li><b>What changed from v1:</b> flat 2D canvas + HUD chrome became one 3D shader-driven river; the data mapping is the same idea, now the entire visual.</li>
+                    <li><b>What became clearer:</b> the saturation thresholds — with real bands, a calm region and a critical one are instantly distinguishable.</li>
+                    <li><b>What I removed and why:</b> the HUD chrome; it was noise faking atmosphere, and its removal makes the data legible as mood.</li>
+                    <li><b>v3 risk:</b> one controlled state shift — let a region cross a threshold mid-view and have the whole river phase-change, calm to unstable, in a single timed transition.</li>
+                </ul>
+            </section>
+        </div>
+    </aside>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
