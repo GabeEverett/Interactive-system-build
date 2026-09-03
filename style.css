@@ -1,0 +1,331 @@
+:root {
+    --ink: #070b0d;
+    --ink-panel: rgba(9, 15, 17, 0.82);
+    --line: rgba(163, 190, 190, 0.18);
+    --fg: #d9e0df;
+    --dim: #67797a;
+    --calm: #3a7d84;
+    --crit: #c07043;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    background: var(--ink);
+    color: var(--fg);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    overflow: hidden;
+}
+
+#river {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+}
+
+/* ---- Persistent minimal HUD ---- */
+
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.mark {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.32em;
+}
+
+.ver {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+}
+
+.state {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--ink-panel);
+    transition: color 0.6s ease, border-color 0.6s ease;
+}
+
+.state-calm {
+    color: var(--calm);
+    border-color: rgba(58, 125, 132, 0.5);
+}
+
+.state-turbulent {
+    color: #d8c07a;
+    border-color: rgba(216, 192, 122, 0.5);
+}
+
+.state-critical {
+    color: var(--crit);
+    border-color: rgba(192, 112, 67, 0.6);
+}
+
+/* ---- Bottom readout bar ---- */
+
+.readout {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    flex-wrap: wrap;
+    padding: 14px 22px;
+    background: linear-gradient(to top, var(--ink) 8%, rgba(7, 11, 13, 0));
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.field .k {
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+}
+
+.field .v {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.select-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--ink-panel);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 7px 30px 7px 10px;
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%),
+        linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+    background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+.select-field select:focus-visible {
+    outline: 1px solid var(--calm);
+    outline-offset: 1px;
+}
+
+.notes-btn {
+    margin-left: auto;
+    background: var(--ink-panel);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.notes-btn:hover {
+    border-color: var(--calm);
+    color: var(--calm);
+}
+
+/* ---- Notes panel ---- */
+
+.notes {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(460px, 92vw);
+    z-index: 20;
+    background: var(--ink-panel);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-left: 1px solid var(--line);
+    transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+}
+
+.notes.hidden {
+    transform: translateX(100%);
+}
+
+.notes-inner {
+    padding: 30px 30px 60px;
+}
+
+.notes-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.notes-close:hover {
+    color: var(--fg);
+}
+
+.notes h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    margin-bottom: 8px;
+}
+
+.notes h1 .dim,
+.dim {
+    color: var(--dim);
+    font-weight: 400;
+}
+
+.lede {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--dim);
+    margin-bottom: 26px;
+}
+
+.notes section {
+    border-top: 1px solid var(--line);
+    padding: 20px 0;
+}
+
+.notes h2 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    color: var(--calm);
+    margin-bottom: 12px;
+}
+
+.notes ol,
+.notes ul {
+    padding-left: 18px;
+}
+
+.notes li {
+    font-size: 12.5px;
+    line-height: 1.65;
+    margin-bottom: 8px;
+}
+
+.notes p {
+    font-size: 12.5px;
+    line-height: 1.7;
+}
+
+.notes em {
+    color: var(--fg);
+    font-style: normal;
+    border-bottom: 1px solid var(--calm);
+}
+
+.thresholds {
+    margin-top: 12px;
+    color: var(--dim);
+    font-size: 11.5px !important;
+    line-height: 1.6;
+}
+
+.inventory {
+    list-style: none;
+    padding-left: 0;
+}
+
+.inventory li {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 10px;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-align: center;
+    padding: 3px 4px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    color: var(--dim);
+    margin-top: 2px;
+}
+
+.tag.keep {
+    color: var(--calm);
+    border-color: rgba(58, 125, 132, 0.5);
+}
+
+.tag.remove {
+    color: var(--crit);
+    border-color: rgba(192, 112, 67, 0.5);
+}
+
+.tag.tighten {
+    color: #d8c07a;
+    border-color: rgba(216, 192, 122, 0.5);
+}
+
+@media (max-width: 640px) {
+    .readout {
+        gap: 16px 20px;
+    }
+    .mark {
+        letter-spacing: 0.22em;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .notes {
+        transition: none;
+    }
+}
